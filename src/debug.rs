@@ -2,6 +2,7 @@
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
 use crate::chunk::value;
+use crate::vm;
 
 pub fn disassemble_chunk(chunk: &Chunk, name: &str) {
     println!("====={}=====", name);
@@ -40,7 +41,26 @@ fn constant_instruction(name: &str, value: value::Value, offset: usize) -> usize
 
 }
 
-fn print_value(value: value::Value) {
+
+pub fn debug_stack_trace(vm: &vm::VM) {
+    let mut args = std::env::args();
+    match args.find(|x| x == "debug_build") {
+        Some(x) => {
+            for (index, value) in vm.stack.iter().enumerate() {
+                println!(" -- STACK TRACE -- ");
+                print!("[ ");
+                print_value(*value);
+                print!(" ]");
+            }
+
+            println!();
+
+        },
+        None => {},
+    }
+}
+
+pub fn print_value(value: value::Value) {
     println!("{}", value);
 }
 

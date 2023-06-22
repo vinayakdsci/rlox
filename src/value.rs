@@ -4,7 +4,7 @@
 
 pub type Value = f32;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ValueArray {
     pub count: usize,
     pub values: Vec<Value>,  // all the numerical values are float under the hood

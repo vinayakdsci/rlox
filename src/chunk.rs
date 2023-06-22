@@ -11,7 +11,7 @@ pub enum OpCode {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Chunk {
     pub code: Vec<OpCode>, 
     pub count: usize,
