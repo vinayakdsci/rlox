@@ -43,7 +43,8 @@ fn repl() {
 
 fn runfile(file_path: std::path::PathBuf) {
     let mut source = std::fs::read_to_string(file_path).expect("invalid file path.");
-    let result = vm::interpret(source);
+    println!("{:?}", source);
+    let _result = vm::interpret(source);
 }
 
 // let ret = chunk.add_constant(24.2);

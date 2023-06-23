@@ -104,7 +104,7 @@ impl Scanner {
                     self.current += 1;
                 },
                 "#" => {
-                    while source.get(self.current..self.current + 1).unwrap() != "\n" {
+                    while self.current < source.len() && source.get(self.current..self.current + 1).unwrap() != "\n" {
                         self.current += 1;
                     }
                 }
