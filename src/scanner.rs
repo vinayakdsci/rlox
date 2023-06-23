@@ -180,6 +180,25 @@ impl Scanner {
         self.make_token(TokenKind::TokenIdentifier)
     }
 
+    fn string(&mut self, source: &String) -> Token {
+        //consume chars till another '"' is encountered, take care of newlines
+        let poss_line = self.line;
+        let poss_col = self.current;
+        while self.peek(source).is_some() && self.peek(source).unwrap() != '"' {
+            if self.peek(source).unwrap() == '\n' { self.line += 1; }
+            self.current += 1;
+        }
+        
+        if self.peek(source).is_none() {
+            println!("Unterminated String {} col {} error:", poss_line, poss_col);
+            return self.error_token("Unterminated String encountered.")
+        }
+
+        //consume the closing quote!
+        self.current += 1;
+        self.make_token(TokenKind::TokenString)
+    }
+
 }
 
 
@@ -218,6 +237,7 @@ pub fn scan_token(mut scanner: &mut Scanner, source: &String) -> Token {
         '=' => if scanner.match_with(&iter_over_source, '=', length) { return scanner.make_token(TokenKind::TokenEqualEqual) } else {return scanner.make_token(TokenKind::TokenEqual)},
         '<' => if scanner.match_with(&iter_over_source, '=', length) { return scanner.make_token(TokenKind::TokenLessEqual) } else {return scanner.make_token(TokenKind::TokenLess)},
         '>' => if scanner.match_with(&iter_over_source, '=', length) { return scanner.make_token(TokenKind::TokenGreaterEqual) } else {return scanner.make_token(TokenKind::TokenGreater)},
+        '"' => return scanner.string(&iter_over_source),
         _ =>  return scanner.error_token("Unexpected character encountered.")
     }
 
