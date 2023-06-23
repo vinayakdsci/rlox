@@ -1,6 +1,6 @@
 use std::str::Chars;
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum TokenKind {
     TokenLeftParen,
     TokenRightParen,
@@ -74,15 +74,15 @@ impl Scanner {
     }
     pub fn advance<'a>(&'a mut self, source: &'a String) -> &str {
         self.current += 1;
-        println!("{:?}", source);
-        source.get(self.current-1..self.current-1).unwrap()
+        println!("{}", self.current);
+        source.get(self.current-1..self.current).unwrap()
     }
     
     pub fn match_with(&mut self, source: &String,  expected: &str, length: usize) -> bool {
-        if self.current == length - 1 {
+        if self.current == length {
             return false;
         }
-        if expected != source.get(self.current..self.current).unwrap() {
+        if expected != source.get(self.current..self.current + 1).unwrap() {
             return false;
         }
 
@@ -93,7 +93,10 @@ impl Scanner {
     fn skip_whitespaces(&mut self, source: &String) {
         loop {
             // let x = source.nth(self.current).unwrap();
-            let x = source.get(self.current..self.current).unwrap();
+            if self.current == source.len() {
+                return
+            }
+            let x = source.get(self.current..self.current + 1).unwrap();
             match x {
                 " " | "\r" | "\t" => {self.current += 1;},
                 "\n" => {
@@ -101,7 +104,7 @@ impl Scanner {
                     self.current += 1;
                 },
                 "#" => {
-                    while source.get(self.current..self.current).unwrap() != "\n" {
+                    while source.get(self.current..self.current + 1).unwrap() != "\n" {
                         self.current += 1;
                     }
                 }
@@ -119,14 +122,14 @@ pub fn scan_token(mut scanner: &mut Scanner, source: &String) -> Token {
     scanner.skip_whitespaces(&iter_over_source);
     scanner.start = scanner.current;
 
-    println!("Source length {length}");
-    println!("Scanner at {}", scanner.current);
+    // println!("Source length {length}");
+    // println!("Scanner at {}", scanner.current);
 
-    if scanner.current == length - 1 {
+    if scanner.current == length {
         return make_token(&mut scanner, TokenKind::TokenEof);
     }
     let c = scanner.advance(&iter_over_source);
-
+    println!("Matched char {}", c);
     match c {
         "(" => return make_token(&mut scanner, TokenKind::TokenLeftParen),
         ")" => return make_token(&mut scanner, TokenKind::TokenRightParen),

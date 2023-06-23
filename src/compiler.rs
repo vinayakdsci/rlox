@@ -19,9 +19,12 @@ pub fn compile(source: String) {
             println!("    |  ")
         }
         // println!("{:?}", token);
+        //
+        println!("{:?}", token.kind);
         if token.kind == scanner::TokenKind::TokenEof {
+            // println!("TokenEof");
             break;
         }
-        
+
     }
 }
