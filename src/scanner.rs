@@ -72,17 +72,17 @@ impl Scanner {
             line: 1,
         }
     }
-    pub fn advance(&mut self, source: &mut Chars<'_>) -> char {
+    pub fn advance<'a>(&'a mut self, source: &'a String) -> &str {
         self.current += 1;
         println!("{:?}", source);
-        source.nth(self.current - 1).unwrap()
+        source.get(self.current-1..self.current-1).unwrap()
     }
     
-    pub fn match_with(&mut self, source: &mut Chars<'_>,  expected: char, length: usize) -> bool {
+    pub fn match_with(&mut self, source: &String,  expected: &str, length: usize) -> bool {
         if self.current == length - 1 {
             return false;
         }
-        if expected != source.nth(self.current).unwrap() {
+        if expected != source.get(self.current..self.current).unwrap() {
             return false;
         }
 
@@ -90,18 +90,18 @@ impl Scanner {
         true
     }
 
-    fn skip_whitespaces(&mut self, source: &mut Chars<'_>) {
+    fn skip_whitespaces(&mut self, source: &String) {
         loop {
-            let x = source.nth(self.current).unwrap();
-
+            // let x = source.nth(self.current).unwrap();
+            let x = source.get(self.current..self.current).unwrap();
             match x {
-                ' ' | '\r' | '\t' => {self.current += 1;},
-                '\n' => {
+                " " | "\r" | "\t" => {self.current += 1;},
+                "\n" => {
                     self.line += 1;
                     self.current += 1;
                 },
-                '#' => {
-                    while source.next().unwrap() != '\n' {
+                "#" => {
+                    while source.get(self.current..self.current).unwrap() != "\n" {
                         self.current += 1;
                     }
                 }
@@ -113,33 +113,35 @@ impl Scanner {
 
 
 pub fn scan_token(mut scanner: &mut Scanner, source: &String) -> Token {
-    let mut iter_over_source = source.chars();
-    scanner.skip_whitespaces(&mut iter_over_source);
-    scanner.start = scanner.current;
 
     let length = source.len();
+    let mut iter_over_source = source;
+    scanner.skip_whitespaces(&iter_over_source);
+    scanner.start = scanner.current;
+
     println!("Source length {length}");
     println!("Scanner at {}", scanner.current);
+
     if scanner.current == length - 1 {
         return make_token(&mut scanner, TokenKind::TokenEof);
     }
-    let c = scanner.advance(&mut iter_over_source);
+    let c = scanner.advance(&iter_over_source);
 
     match c {
-        '(' => return make_token(&mut scanner, TokenKind::TokenLeftParen),
-        ')' => return make_token(&mut scanner, TokenKind::TokenRightParen),
-        '{' => return make_token(&mut scanner, TokenKind::TokenLeftBrace),
-        '}' => return make_token(&mut scanner, TokenKind::TokenRightBrace),
-        ';' => return make_token(&mut scanner, TokenKind::TokenSemiColon),
-        ',' => return make_token(&mut scanner, TokenKind::TokenComma),
-        '.' => return make_token(&mut scanner, TokenKind::TokenPeriod),
-        '-' => return make_token(&mut scanner, TokenKind::TokenMinus),
-        '+' => return make_token(&mut scanner, TokenKind::TokenPlus),
-        '*' => return make_token(&mut scanner, TokenKind::TokenStar),
-        '!' => if scanner.match_with(&mut iter_over_source, '=', length) { return make_token(&mut scanner,TokenKind::TokenBangEqual) } else {return make_token(&mut scanner, TokenKind::TokenBang)},
-        '=' => if scanner.match_with(&mut iter_over_source, '=', length) { return make_token(&mut scanner,TokenKind::TokenEqualEqual) } else {return make_token(&mut scanner, TokenKind::TokenEqual)},
-        '<' => if scanner.match_with(&mut iter_over_source, '=', length) { return make_token(&mut scanner,TokenKind::TokenLessEqual) } else {return make_token(&mut scanner, TokenKind::TokenLess)},
-        '>' => if scanner.match_with(&mut iter_over_source, '=', length) { return make_token(&mut scanner, TokenKind::TokenGreaterEqual) } else {return make_token(&mut scanner, TokenKind::TokenGreater)},
+        "(" => return make_token(&mut scanner, TokenKind::TokenLeftParen),
+        ")" => return make_token(&mut scanner, TokenKind::TokenRightParen),
+        "{" => return make_token(&mut scanner, TokenKind::TokenLeftBrace),
+        "}" => return make_token(&mut scanner, TokenKind::TokenRightBrace),
+        ";" => return make_token(&mut scanner, TokenKind::TokenSemiColon),
+        "," => return make_token(&mut scanner, TokenKind::TokenComma),
+        "." => return make_token(&mut scanner, TokenKind::TokenPeriod),
+        "-" => return make_token(&mut scanner, TokenKind::TokenMinus),
+        "+" => return make_token(&mut scanner, TokenKind::TokenPlus),
+        "*" => return make_token(&mut scanner, TokenKind::TokenStar),
+        "!" => if scanner.match_with(&iter_over_source, "=", length) { return make_token(&mut scanner,TokenKind::TokenBangEqual) } else {return make_token(&mut scanner, TokenKind::TokenBang)},
+        "=" => if scanner.match_with(&iter_over_source, "=", length) { return make_token(&mut scanner,TokenKind::TokenEqualEqual) } else {return make_token(&mut scanner, TokenKind::TokenEqual)},
+        "<" => if scanner.match_with(&iter_over_source, "=", length) { return make_token(&mut scanner,TokenKind::TokenLessEqual) } else {return make_token(&mut scanner, TokenKind::TokenLess)},
+        ">" => if scanner.match_with(&iter_over_source, "=", length) { return make_token(&mut scanner, TokenKind::TokenGreaterEqual) } else {return make_token(&mut scanner, TokenKind::TokenGreater)},
         _ =>  return error_token(&mut scanner, "Unexpected character encountered.")
     }
 
