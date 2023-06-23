@@ -20,7 +20,7 @@ pub fn compile(source: String) {
         }
         // println!("{:?}", token);
         //
-        println!("{:?}", token.kind);
+        println!("{:?}, {:?}", token.kind, token.length);
         if token.kind == scanner::TokenKind::TokenEof {
             // println!("TokenEof");
             break;
