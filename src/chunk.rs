@@ -3,11 +3,15 @@ pub mod value;
 
 
 #[derive(Default, Debug, Clone, Copy)]
-#[repr(u8)]
 pub enum OpCode {
-    #[default]
-    OpReturn = 1,
     OpConstant(value::Value),
+    OpNegate,
+    OpAdd,
+    OpSubtract,
+    OpMultiply,
+    OpDivide,
+    #[default]
+    OpReturn,
 }
 
 

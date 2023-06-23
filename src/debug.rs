@@ -31,6 +31,21 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize{
         OpCode::OpReturn => {
             simple_instruction("OpReturn", offset)
         }
+        OpCode::OpNegate => {
+            simple_instruction("OpNegate", offset)
+        }
+        OpCode::OpAdd => {
+            simple_instruction("OpAdd", offset)
+        }
+        OpCode::OpSubtract => {
+            simple_instruction("OpSubtract", offset)
+        }
+        OpCode::OpDivide => {
+            simple_instruction("OpDivide", offset)
+        }
+        OpCode::OpMultiply => {
+            simple_instruction("OpMultiply", offset)
+        }
     }
 }
 
@@ -38,30 +53,23 @@ fn constant_instruction(name: &str, value: value::Value, offset: usize) -> usize
     print!("{}   ---   {}", name, value);
     println!();
     offset + 1
-
 }
 
 
 pub fn debug_stack_trace(vm: &vm::VM) {
-    let mut args = std::env::args();
-    match args.find(|x| x == "debug_build") {
-        Some(x) => {
-            for (index, value) in vm.stack.iter().enumerate() {
-                println!(" -- STACK TRACE -- ");
-                print!("[ ");
-                print_value(*value);
-                print!(" ]");
-            }
-
-            println!();
-
-        },
-        None => {},
+    if std::env::args().any(|x| &x == "debug_build") {
+        for (_, value) in vm.stack.iter().enumerate() {
+            println!(" -- STACK TRACE -- ");
+            print!("[ ");
+            print_value(*value);
+            print!(" ]");
+        }
+        println!("--- STACK TRACE ENDS ---");
     }
 }
 
 pub fn print_value(value: value::Value) {
-    println!("{}", value);
+    print!("{}", value);
 }
 
 fn simple_instruction(name: &str, offset: usize) -> usize {

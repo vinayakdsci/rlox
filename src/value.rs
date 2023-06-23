@@ -21,12 +21,7 @@ impl ValueArray {
     }
 
     pub fn write_value_array(&mut self, value: Value) {
-        if self.values.capacity() < self.count + 1 || self.values.is_empty() {
-            self.values.push(value);
-        }
-        else {
-            self.values[self.count] = value;
-        }
+        self.values.push(value);
         self.count += 1;
     }
 }
