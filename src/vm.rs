@@ -92,9 +92,9 @@ fn run(vm: &mut VM) -> InterpretResult {
             chunk::OpCode::OpMultiply => binary_solver(vm, '*'),
             chunk::OpCode::OpDivide => binary_solver(vm, '/'),
             chunk::OpCode::OpConstant(x) => vm.push(x),
-            _ => {
-                panic!("Unknown Operation Instruction encountered");
-            }
+            // _ => {
+            //     panic!("Unknown Operation Instruction encountered");
+            // }
         }
     }
     InterpretResult::InterpretCompileError
