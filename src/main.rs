@@ -1,10 +1,10 @@
 // mod chunk;
-use std::io::Write;
 use std::io::BufRead;
-mod debug;
+use std::io::Write;
 mod chunk;
-mod vm;
 mod compiler;
+mod debug;
+mod vm;
 
 fn main() {
 
@@ -14,32 +14,28 @@ fn main() {
     
     if args.len() == 1 {
         repl();
-    }
-    else if args.len() == 2 {
+    } else if args.len() == 2 {
         runfile(std::path::PathBuf::from(args.nth(1).unwrap()));
-    }
-    else {
+    } else {
         println!("Usage: cargo run [file_path]");
     }
 }
 
 
 fn repl() {
-    loop{
+    loop {
         print!(">>> ");
         std::io::stdout().flush().unwrap();
         let line = std::io::stdin().lock().lines().next().unwrap().unwrap();
 
         if line == "exit" {
             break;
-        }
-        else {
+        } else {
             let s = vm::interpret(line);
         }
     }
     println!("Exited.");
 }
-
 
 fn runfile(file_path: std::path::PathBuf) {
     let mut source = std::fs::read_to_string(file_path).expect("invalid file path.");

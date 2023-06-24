@@ -1,7 +1,7 @@
 // this file is necessary because of the representation of OpCodes as bytes
+use crate::chunk::value;
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
-use crate::chunk::value;
 use crate::vm;
 
 pub fn disassemble_chunk(chunk: &Chunk, name: &str) {
@@ -13,39 +13,24 @@ pub fn disassemble_chunk(chunk: &Chunk, name: &str) {
     }
 }
 
-pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize{
+pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
     print!("---{}    ", offset);
     if offset > 0 && chunk.lines[offset] == chunk.lines[offset - 1] {
         //check if the last and the current line are same
         print!{"    |   "};
-    }
-    else {
+    } else {
         //new inst line
         print!("    {}   ", chunk.lines[offset]);
     }
     let inst = chunk.code[offset];
     match inst {
-        OpCode::OpConstant(x) => {
-            constant_instruction("OpConstant", x, offset)
-        } 
-        OpCode::OpReturn => {
-            simple_instruction("OpReturn", offset)
-        }
-        OpCode::OpNegate => {
-            simple_instruction("OpNegate", offset)
-        }
-        OpCode::OpAdd => {
-            simple_instruction("OpAdd", offset)
-        }
-        OpCode::OpSubtract => {
-            simple_instruction("OpSubtract", offset)
-        }
-        OpCode::OpDivide => {
-            simple_instruction("OpDivide", offset)
-        }
-        OpCode::OpMultiply => {
-            simple_instruction("OpMultiply", offset)
-        }
+        OpCode::OpConstant(x) => constant_instruction("OpConstant", x, offset),
+        OpCode::OpReturn => simple_instruction("OpReturn", offset),
+        OpCode::OpNegate => simple_instruction("OpNegate", offset),
+        OpCode::OpAdd => simple_instruction("OpAdd", offset),
+        OpCode::OpSubtract => simple_instruction("OpSubtract", offset),
+        OpCode::OpDivide => simple_instruction("OpDivide", offset),
+        OpCode::OpMultiply => simple_instruction("OpMultiply", offset),
     }
 }
 

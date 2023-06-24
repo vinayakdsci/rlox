@@ -1,8 +1,8 @@
 // The Virtual Machine!
 use crate::chunk;
 use crate::chunk::value::Value;
-use crate::debug::print_value;
 use crate::compiler;
+use crate::debug::print_value;
 
 
 const STACK_MAX: usize = 256;
@@ -12,14 +12,13 @@ const STACK_MAX: usize = 256;
 pub enum InterpretResult {
     InterpretOK = 1,
     InterpretCompileError,
-    InterpretRuntimeError
+    InterpretRuntimeError,
 }
 
 
 pub struct VM {
     pub chunk: chunk::Chunk,
-    pub inst_pointer: usize, // Rust might not allow pointers to the middle of the array, sp use an
-                             // index insead
+    pub inst_pointer: usize, // Rust might not allow pointers to the middle of the array, sp use an index insead
     pub stack: Vec<Value>,
 }
 
@@ -88,21 +87,11 @@ fn run(vm: &mut VM) -> InterpretResult {
                 let neg = vm.pop();
                 vm.push(-neg);
             },
-            chunk::OpCode::OpAdd => {
-                binary_solver(vm, '+')
-            }
-            chunk::OpCode::OpSubtract => {
-                binary_solver(vm, '-')
-            }
-            chunk::OpCode::OpMultiply => {
-                binary_solver(vm, '*')
-            }
-            chunk::OpCode::OpDivide => {
-                binary_solver(vm, '/')
-            }
-            chunk::OpCode::OpConstant(x) => {
-                vm.push(x);
-            },
+            chunk::OpCode::OpAdd => binary_solver(vm, '+'),
+            chunk::OpCode::OpSubtract => binary_solver(vm, '-'),
+            chunk::OpCode::OpMultiply => binary_solver(vm, '*'),
+            chunk::OpCode::OpDivide => binary_solver(vm, '/'),
+            chunk::OpCode::OpConstant(x) => vm.push(x),
             _ => {
                 panic!("Unknown Operation Instruction encountered");
             }
