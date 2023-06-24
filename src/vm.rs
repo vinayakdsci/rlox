@@ -47,8 +47,19 @@ impl VM {
 
 
 pub fn interpret(source: &str) -> InterpretResult {
-    compiler::compile(source);
-    InterpretResult::InterpretOK
+    //pass the chunk to the compiler (remember borrow),
+    //fill it with bytecode, and then execute it on the VM
+    let mut chunk = chunk::Chunk::init_chunk();
+    let mut vm = VM::init_vm(&chunk);
+    if !compiler::compile(source, &chunk) {
+        return InterpretResult::InterpretCompileError;
+    }
+
+    vm.chunk = chunk;
+    vm.inst_pointer = 0;
+    let result: InterpretResult = run(&mut vm);
+
+    result
 }
 
 fn binary_solver(vm: &mut VM, operator: char) {

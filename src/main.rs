@@ -1,15 +1,12 @@
 // mod chunk;
 use std::io::BufRead;
 use std::io::Write;
-mod chunk;
 mod compiler;
+mod chunk;
 mod debug;
 mod vm;
 
 fn main() {
-
-    let chunk = chunk::Chunk::init_chunk();
-    let _vm_instance = vm::VM::init_vm(&chunk);
     let mut args = std::env::args();
     
     if args.len() == 1 {

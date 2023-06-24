@@ -1,6 +1,6 @@
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TokenKind {
     TokenLeftParen,
     TokenRightParen,
@@ -48,8 +48,8 @@ pub enum TokenKind {
     TokenEof,
 }
 
-// #[derive(Debug)]
-pub struct Token {
+#[derive(Debug, Clone)]
+pub struct Token{
     pub kind: TokenKind,
     pub length: usize,
     pub start: usize,
@@ -73,7 +73,7 @@ impl Scanner {
         }
     }
 
-    pub fn advance<'a>(&'a mut self, source: &'a str) -> &str {
+    pub fn advance<'a>(&mut self, source: &'a str) -> &'a str {
         self.current += 1;
         // println!("{}", self.current);
         source.get(self.current - 1..self.current).unwrap()
@@ -168,14 +168,14 @@ impl Scanner {
         }
     }
 
-    fn char_at_start(&self, source: &str) -> Option<char> {
+    fn char_at_start(&self, source: & str) -> Option<char> {
         match source.get(self.start + 1..=self.start + 1) {
             Some(x) => return x.chars().nth(0),
             None => return None,
         }
     }
 
-    fn identifier_type(&mut self, source: &str) -> TokenKind {
+    fn identifier_type(&mut self, source: & str) -> TokenKind {
         //build the trie
         match source.get(self.start..=self.start) {
             Some(x) => {
@@ -245,7 +245,7 @@ impl Scanner {
         // TokenKind::TokenIdentifier
     }
 
-    fn check_keyword(&self, start: usize, length: usize, rest: &str, token_kind: TokenKind, source: &str) -> TokenKind {
+    fn check_keyword(&self, start: usize, length: usize, rest: & str, token_kind: TokenKind, source: & str) -> TokenKind<> {
         if self.current - self.start == start + length
             && source.get(self.start + start..self.start + start + length).unwrap() == rest 
         {
@@ -254,7 +254,7 @@ impl Scanner {
         TokenKind::TokenIdentifier
     }
 
-    fn number(&mut self, source: &str) -> Token {
+    fn number(&mut self, source: & str) -> Token {
         while self.peek(source).is_some() && self.peek(source).unwrap().is_ascii_digit() {
             self.current += 1;
         }
@@ -279,7 +279,7 @@ impl Scanner {
         self.make_token(TokenKind::TokenNumber)
     }
 
-    fn identifier(&mut self, source: &str) -> Token {
+    fn identifier(&mut self, source: & str) -> Token {
         while self.peek(source).is_some() 
             && (self.peek(source).unwrap().is_ascii_alphanumeric() 
                 || self.peek(source).unwrap() == '_') 
@@ -291,7 +291,7 @@ impl Scanner {
         self.make_token(token_for_id)
     }
 
-    fn string(&mut self, source: &str) -> Token {
+    fn string(&mut self, source: & str) -> Token {
         //consume chars till another '"' is encountered, take care of newlines
         let poss_line = self.line;
         let poss_col = self.current;
@@ -315,7 +315,7 @@ impl Scanner {
 }
 
 
-pub fn scan_token(mut scanner: &mut Scanner, source: &str) -> Token {
+pub fn scan_token(mut scanner: & mut Scanner, source: & str) -> Token {
 
     let length = source.len();
     let iter_over_source = source;
