@@ -2,7 +2,7 @@
 mod scanner;
 
 
-pub fn compile(source: String) {
+pub fn compile(source: &str) {
     let mut my_scanner = scanner::Scanner::init_scanner(); // Let the scanner kick in
     let mut line = -1;
 

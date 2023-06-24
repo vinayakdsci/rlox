@@ -1,4 +1,4 @@
-use std::str::Chars;
+
 
 #[derive(Debug, PartialEq)]
 pub enum TokenKind {
@@ -73,13 +73,13 @@ impl Scanner {
         }
     }
 
-    pub fn advance<'a>(&'a mut self, source: &'a String) -> &str {
+    pub fn advance<'a>(&'a mut self, source: &'a str) -> &str {
         self.current += 1;
         // println!("{}", self.current);
         source.get(self.current - 1..self.current).unwrap()
     }
     
-    fn match_with(&mut self, source: &String, expected: char, length: usize) -> bool {
+    fn match_with(&mut self, source: &str, expected: char, length: usize) -> bool {
         if self.current == length {
             return false;
         }
@@ -91,7 +91,7 @@ impl Scanner {
         true
     }
 
-    fn skip_whitespaces(&mut self, source: &String) {
+    fn skip_whitespaces(&mut self, source: &str) {
         loop {
             // let x = source.nth(self.current).unwrap();
             if self.current == source.len() {
@@ -116,7 +116,7 @@ impl Scanner {
         } 
     }
 
-    fn peek(&mut self, source: &String) -> Option<char> {
+    fn peek(&mut self, source: &str) -> Option<char> {
         if source.get(self.current..=self.current).is_none() {
             None
         }
@@ -125,14 +125,13 @@ impl Scanner {
                 source
                 .get(self.current..=self.current)
                 .unwrap()
-                .chars()
-                .nth(0)
+                .chars().next()
                 .unwrap(),
             )
         }
     }
 
-    fn peek_next(&mut self, source: &String) -> Option<char> {
+    fn peek_next(&mut self, source: &str) -> Option<char> {
 
         if source.get(self.current + 1..=self.current + 1).is_none() {
             None
@@ -142,67 +141,66 @@ impl Scanner {
                 source
                 .get(self.current + 1..=self.current+1)
                 .unwrap()
-                .chars()
-                .nth(0)
+                .chars().next()
                 .unwrap(),
             )
         }
     }
 
     fn make_token(&mut self, kind: TokenKind) -> Token {
-        let token = Token {
-            kind: kind,
+        
+        Token {
+            kind,
             start: self.start,
             length: self.current - self.start,
             line: self.line,
-        };
-        token
+        }
     }
 
     fn error_token(&mut self, message: &str) -> Token {
-        let mut token = Token {
+        
+        Token {
             kind: TokenKind::TokenError(String::from(message)),
             start: 0,
             length: message.len(),
             line: self.line,
-        };
-        token
+        }
     }
 
-    fn next_char(&self, source: &String) -> Option<char> {
-        source.get(self.current + 1..=self.current + 1).unwrap().chars().nth(0)
+    fn next_char(&self, source: &str) -> Option<char> {
+        source.get(self.current + 1..=self.current + 1).unwrap().chars().next()
     }
 
-    fn identifier_type(&mut self, source: &String) -> TokenKind {
+    fn identifier_type(&mut self, source: &str) -> TokenKind {
         //build the trie
         match source.get(self.start..=self.start) {
             Some(x) => {
-                let y = x.chars().nth(0).unwrap();
+                let y = x.chars().next().unwrap();
                 match y {
-                    'a' => return self.check_keyword(1, 2, "nd", TokenKind::TokenAnd, &source),
-                    'c' => return self.check_keyword(1, 4, "lass", TokenKind::TokenClass, &source),
-                    'e' => return self.check_keyword(1, 3, "lse", TokenKind::TokenElse, &source),
-                    'i' => return self.check_keyword(1, 1, "f", TokenKind::TokenIf, &source),
-                    'n' => return self.check_keyword(1, 2, "il", TokenKind::TokenNil, &source),
-                    'o' => return self.check_keyword(1, 1, "r", TokenKind::TokenOr, &source),
-                    'p' => return self.check_keyword(1, 4, "rint", TokenKind::TokenPrint, &source),
-                    'r' => return self.check_keyword(1, 5, "eturn", TokenKind::TokenReturn, &source),
-                    's' => return self.check_keyword(1, 4, "uper", TokenKind::TokenSuper, &source),
-                    'w' => return self.check_keyword(1, 4, "hile", TokenKind::TokenWhile, &source),
+                    'a' => self.check_keyword(1, 2, "nd", TokenKind::TokenAnd, source),
+                    'c' => self.check_keyword(1, 4, "lass", TokenKind::TokenClass, source),
+                    'e' => self.check_keyword(1, 3, "lse", TokenKind::TokenElse, source),
+                    'i' => self.check_keyword(1, 1, "f", TokenKind::TokenIf, source),
+                    'n' => self.check_keyword(1, 2, "il", TokenKind::TokenNil, source),
+                    'o' => self.check_keyword(1, 1, "r", TokenKind::TokenOr, source),
+                    'p' => self.check_keyword(1, 4, "rint", TokenKind::TokenPrint, source),
+                    'r' => self.check_keyword(1, 5, "eturn", TokenKind::TokenReturn, source),
+                    's' => self.check_keyword(1, 4, "uper", TokenKind::TokenSuper, source),
+                    'w' => self.check_keyword(1, 4, "hile", TokenKind::TokenWhile, source),
                     _ => {
                         println!("{}", y);
-                        return TokenKind::TokenIdentifier;
+                        TokenKind::TokenIdentifier
                     }
                 }
             },
             None => {
-                return TokenKind::TokenError(String::from("Ran out of characters in identifier_type()"));
+                TokenKind::TokenError(String::from("Ran out of characters in identifier_type()"))
             }
         }
         // TokenKind::TokenIdentifier
     }
 
-    fn check_keyword(&self, start: usize, length: usize, rest: &str, token_kind: TokenKind, source: &String) -> TokenKind {
+    fn check_keyword(&self, start: usize, length: usize, rest: &str, token_kind: TokenKind, source: &str) -> TokenKind {
         if self.current - self.start == start + length
             && source.get(self.start + start..self.start + start + length).unwrap() == rest 
         {
@@ -211,7 +209,7 @@ impl Scanner {
         TokenKind::TokenIdentifier
     }
 
-    fn number(&mut self, source: &String) -> Token {
+    fn number(&mut self, source: &str) -> Token {
         while self.peek(source).is_some() && self.peek(source).unwrap().is_ascii_digit() {
             self.current += 1;
         }
@@ -225,10 +223,18 @@ impl Scanner {
                    self.current += 1;
                }
         }
+
+        //check if there is no space making an invalid identifier
+        if self.peek(source).is_some()
+            && (self.peek(source).unwrap().is_ascii_alphabetic() 
+            || self.peek(source).unwrap() == '_')
+        {
+            return self.error_token("Error: cannot start an identifier with a number!");
+        }
         self.make_token(TokenKind::TokenNumber)
     }
 
-    fn identifier(&mut self, source: &String) -> Token {
+    fn identifier(&mut self, source: &str) -> Token {
         while self.peek(source).is_some() 
             && (self.peek(source).unwrap().is_ascii_alphanumeric() 
                 || self.peek(source).unwrap() == '_') 
@@ -236,11 +242,11 @@ impl Scanner {
                 self.current += 1;
         }
         // borrow rules
-        let token_for_id = self.identifier_type(&source);
+        let token_for_id = self.identifier_type(source);
         self.make_token(token_for_id)
     }
 
-    fn string(&mut self, source: &String) -> Token {
+    fn string(&mut self, source: &str) -> Token {
         //consume chars till another '"' is encountered, take care of newlines
         let poss_line = self.line;
         let poss_col = self.current;
@@ -264,11 +270,11 @@ impl Scanner {
 }
 
 
-pub fn scan_token(mut scanner: &mut Scanner, source: &String) -> Token {
+pub fn scan_token(mut scanner: &mut Scanner, source: &str) -> Token {
 
     let length = source.len();
-    let mut iter_over_source = source;
-    scanner.skip_whitespaces(&iter_over_source);
+    let iter_over_source = source;
+    scanner.skip_whitespaces(iter_over_source);
     scanner.start = scanner.current;
 
     // println!("Source length {length}");
@@ -277,34 +283,34 @@ pub fn scan_token(mut scanner: &mut Scanner, source: &String) -> Token {
     if scanner.current == length {
         return scanner.make_token(TokenKind::TokenEof);
     }
-    let c = scanner.advance(&iter_over_source).chars().nth(0).unwrap();
+    let c = scanner.advance(iter_over_source).chars().next().unwrap();
 
     // match for identifiers
     if c.is_ascii_alphabetic() || c == '_' {
-        return scanner.identifier(&iter_over_source) 
+        return scanner.identifier(iter_over_source) 
     }
     if c.is_ascii_digit() {
-        return scanner.number(&iter_over_source) 
+        return scanner.number(iter_over_source) 
     }
 
     // println!("Matched char {}", c);
     match c {
-        '(' => return scanner.make_token(TokenKind::TokenLeftParen),
-        ')' => return scanner.make_token(TokenKind::TokenRightParen),
-        '{' => return scanner.make_token(TokenKind::TokenLeftBrace),
-        '}' => return scanner.make_token(TokenKind::TokenRightBrace),
-        ';' => return scanner.make_token(TokenKind::TokenSemiColon),
-        ',' => return scanner.make_token(TokenKind::TokenComma),
-        '.' => return scanner.make_token(TokenKind::TokenPeriod),
-        '-' => return scanner.make_token(TokenKind::TokenMinus),
-        '+' => return scanner.make_token(TokenKind::TokenPlus),
-        '*' => return scanner.make_token(TokenKind::TokenStar),
-        '!' => if scanner.match_with(&iter_over_source, '=', length) { return scanner.make_token(TokenKind::TokenBangEqual) }    else {return scanner.make_token(TokenKind::TokenBang)},
-        '=' => if scanner.match_with(&iter_over_source, '=', length) { return scanner.make_token(TokenKind::TokenEqualEqual) }   else {return scanner.make_token(TokenKind::TokenEqual)},
-        '<' => if scanner.match_with(&iter_over_source, '=', length) { return scanner.make_token(TokenKind::TokenLessEqual) }    else {return scanner.make_token(TokenKind::TokenLess)},
-        '>' => if scanner.match_with(&iter_over_source, '=', length) { return scanner.make_token(TokenKind::TokenGreaterEqual) } else {return scanner.make_token(TokenKind::TokenGreater)},
-        '"' => return scanner.string(&iter_over_source),
-         _  => return scanner.error_token("Unexpected character encountered."),
+        '(' => scanner.make_token(TokenKind::TokenLeftParen),
+        ')' => scanner.make_token(TokenKind::TokenRightParen),
+        '{' => scanner.make_token(TokenKind::TokenLeftBrace),
+        '}' => scanner.make_token(TokenKind::TokenRightBrace),
+        ';' => scanner.make_token(TokenKind::TokenSemiColon),
+        ',' => scanner.make_token(TokenKind::TokenComma),
+        '.' => scanner.make_token(TokenKind::TokenPeriod),
+        '-' => scanner.make_token(TokenKind::TokenMinus),
+        '+' => scanner.make_token(TokenKind::TokenPlus),
+        '*' => scanner.make_token(TokenKind::TokenStar),
+        '!' => if scanner.match_with(iter_over_source, '=', length) { scanner.make_token(TokenKind::TokenBangEqual) }    else {scanner.make_token(TokenKind::TokenBang)},
+        '=' => if scanner.match_with(iter_over_source, '=', length) { scanner.make_token(TokenKind::TokenEqualEqual) }   else {scanner.make_token(TokenKind::TokenEqual)},
+        '<' => if scanner.match_with(iter_over_source, '=', length) { scanner.make_token(TokenKind::TokenLessEqual) }    else {scanner.make_token(TokenKind::TokenLess)},
+        '>' => if scanner.match_with(iter_over_source, '=', length) { scanner.make_token(TokenKind::TokenGreaterEqual) } else {scanner.make_token(TokenKind::TokenGreater)},
+        '"' => scanner.string(iter_over_source),
+         _  => scanner.error_token("Unexpected character encountered."),
     }
 
 

@@ -2,7 +2,7 @@
 use crate::chunk;
 use crate::chunk::value::Value;
 use crate::compiler;
-use crate::debug::print_value;
+
 
 
 const STACK_MAX: usize = 256;
@@ -46,7 +46,7 @@ impl VM {
 }
 
 
-pub fn interpret(source: String) -> InterpretResult {
+pub fn interpret(source: &str) -> InterpretResult {
     compiler::compile(source);
     InterpretResult::InterpretOK
 }

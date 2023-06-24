@@ -8,8 +8,8 @@ mod vm;
 
 fn main() {
 
-    let mut chunk = chunk::Chunk::init_chunk();
-    let mut vm_instance = vm::VM::init_vm(&chunk);
+    let chunk = chunk::Chunk::init_chunk();
+    let _vm_instance = vm::VM::init_vm(&chunk);
     let mut args = std::env::args();
     
     if args.len() == 1 {
@@ -31,16 +31,16 @@ fn repl() {
         if line == "exit" {
             break;
         } else {
-            let s = vm::interpret(line);
+            let _s = vm::interpret(&line);
         }
     }
     println!("Exited.");
 }
 
 fn runfile(file_path: std::path::PathBuf) {
-    let mut source = std::fs::read_to_string(file_path).expect("invalid file path.");
+    let source = std::fs::read_to_string(file_path).expect("invalid file path.");
     println!("{:?}", source);
-    let _result = vm::interpret(source);
+    let _result = vm::interpret(&source);
 }
 
 // let ret = chunk.add_constant(24.2);
