@@ -1,9 +1,9 @@
 // The Virtual Machine!
-use crate::chunk;
+
 use crate::chunk::value::Value;
+use crate::chunk;
+use crate::scanner;
 use crate::compiler;
-
-
 
 const STACK_MAX: usize = 256;
 
@@ -37,7 +37,15 @@ impl VM {
     // }
     pub fn pop(&mut self) -> Value {
         // assert_eq!(self.stack.capacity(), self.stack.len());
-        self.stack.pop().unwrap()
+        match self.stack.last() {
+            Some(x) => {
+                return self.stack.pop().unwrap();
+            }
+            None => {
+               eprintln!("No values in the stack, expression required");
+               64f64
+            }
+        }
     }
 
     pub fn push(&mut self, value: Value) {
@@ -51,15 +59,19 @@ pub fn interpret(source: &str) -> InterpretResult {
     //fill it with bytecode, and then execute it on the VM
     let mut chunk = chunk::Chunk::init_chunk();
     let mut vm = VM::init_vm(&chunk);
-    if !compiler::compile(source, &chunk) {
+    let mut scanner = compiler::scanner::Scanner::init_scanner();
+    let mut parser = compiler::Parser::init_parser();
+
+    if !compiler::compile(source, &mut chunk, &mut parser, &mut scanner) {
         return InterpretResult::InterpretCompileError;
     }
 
-    vm.chunk = chunk;
-    vm.inst_pointer = 0;
-    let result: InterpretResult = run(&mut vm);
+    // vm.chunk = chunk;
+    // vm.inst_pointer = 0;
+    // let result: InterpretResult = run(&mut vm);
 
-    result
+    // result
+    InterpretResult::InterpretOK
 }
 
 fn binary_solver(vm: &mut VM, operator: char) {
@@ -70,7 +82,7 @@ fn binary_solver(vm: &mut VM, operator: char) {
         '-' => vm.push(a - b),
         '*' => vm.push(a * b),
         '/' => {
-            if b == 0f32 {
+            if b == 0f64 {
                 println!("Error! cannot divide by 0");
                 vm.push(b);
                 vm.push(a);

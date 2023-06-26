@@ -2,7 +2,7 @@
 //
 
 
-pub type Value = f32;
+pub type Value = f64;
 
 #[derive(Debug, Clone)]
 pub struct ValueArray {

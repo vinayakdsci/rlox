@@ -1,9 +1,19 @@
 // mod chunk;
+#[path = "scanner.rs"]
+pub mod scanner;
+// use crate::compiler::chunk::*;
+#[path = "compiler.rs"]
+pub mod compiler;
+
+#[path = "debug.rs"]
+pub mod debug;
+// use crate::compiler::;
+
+#[path = "chunk.rs"]
+pub mod chunk;
+
 use std::io::BufRead;
 use std::io::Write;
-mod compiler;
-mod chunk;
-mod debug;
 mod vm;
 
 fn main() {
@@ -20,6 +30,7 @@ fn main() {
 
 
 fn repl() {
+    // the compiler is single pass, so init the parser here?
     loop {
         print!(">>> ");
         std::io::stdout().flush().unwrap();
