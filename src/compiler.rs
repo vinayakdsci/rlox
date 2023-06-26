@@ -150,11 +150,12 @@ impl Parser {
     fn number(&self, source: &str, chunk: &mut Chunk) {
         match self.previous_token.to_owned() {
             Some(x) => {
-                let value = source.get(x.start..x.start + x.length - 1).unwrap();
+                let value = source.get(x.start..=x.start + x.length - 1).unwrap();
                 let cons = f64::from_str(value);
                 match cons {
                     Ok(y) =>{
                         let mut byte = chunk.add_constant(y);
+                        println!("{:?}", byte);
                         self.emit_byte(chunk, byte);
                     }
                     Err(..) => {
@@ -168,6 +169,40 @@ impl Parser {
         }
     }
 
+    fn parse_precedence(&mut self, precede: u8, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
+        self.advance(source, scanner, chunk);
+        let owner = self.previous_token.to_owned().unwrap().kind;
+        let (prefix, _, _) = parse_rule(owner);
+        match prefix {
+            "none" => self.error_at_prev("Expect expression."),
+            "unary" => self.unary(source, scanner, chunk),
+            "grouping" => self.grouping(source, scanner, chunk),
+            "number" => self.number(source, chunk),
+            _ => self.error_at_prev("This is not a valid token"),
+        }
+        loop {
+
+            let owner = self.current_token.to_owned().unwrap().kind;
+            let (_, infix, prec) = parse_rule(owner);
+
+            if precede > prec {
+                break;
+            }
+
+            self.advance(source, scanner, chunk);
+
+            match infix {
+                "none" => {
+                    // self.error_at_current("Exception in parse_precedence");
+                }
+                "binary" => {
+                    self.binary(source, scanner, chunk);
+                }
+                _ => {  }, 
+            }
+        }
+    }
+
     fn emit_byte(&self, chunk: &mut Chunk, byte: OpCode) {
         chunk.write_chunk(byte, self.previous_token.as_ref().unwrap().line);
     }
@@ -176,31 +211,47 @@ impl Parser {
         self.emit_byte(chunk, OpCode::OpReturn);
     }
 
-    fn expression() {
-
+    fn expression(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
+        self.parse_precedence(PREC_ASSIGNMENT, source, scanner, chunk);
     }
 
     fn unary(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
-        let token_kind = &self.previous_token.as_ref().unwrap().kind;
-        // self.expression();
+        let token_kind = self.previous_token.to_owned().unwrap().kind;
+        self.parse_precedence(PREC_UNARY, source, scanner, chunk);
         
-        if *token_kind == scanner::TokenKind::TokenMinus {
+        if token_kind == scanner::TokenKind::TokenMinus {
             self.emit_byte(chunk, OpCode::OpNegate);
         } else {
             return;
         }
     }
 
-    fn group(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
-        // self.expression();
-        self.consume(source, scanner::TokenKind::TokenRightParen, "exprected ')' after expression", scanner, chunk);
+
+    fn binary(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
+        let token_kind = self.previous_token.to_owned().unwrap().kind;
+        let (prefix, infix, prec) = parse_rule(token_kind.to_owned());
+        self.parse_precedence(prec + 1, source, scanner, chunk);
+
+        match token_kind {
+            scanner::TokenKind::TokenPlus =>  self.emit_byte(chunk, OpCode::OpAdd),
+            scanner::TokenKind::TokenMinus => self.emit_byte(chunk, OpCode::OpSubtract),
+            scanner::TokenKind::TokenSlash => self.emit_byte(chunk, OpCode::OpDivide),
+            scanner::TokenKind::TokenStar =>  self.emit_byte(chunk, OpCode::OpMultiply),
+            _ => return,
+        }
     }
 
+    fn grouping(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
+        self.expression(source, scanner, chunk);
+        self.consume(source, scanner::TokenKind::TokenRightParen, "exprected ')' after expression", scanner, chunk);
+    }
 }
+
+
 pub fn compile(source: &str, chunk: &mut Chunk, parser: &mut Parser, scanner: &mut scanner::Scanner) -> bool {
     // the compiler is single pass, so init the parser here?
     parser.advance(source, scanner, chunk);
-    // parser.expression();
+    parser.expression(source, scanner, chunk);
     println!("{:?}", parser);
     parser.consume(source, scanner::TokenKind::TokenEof, "Expected end of expression in compile", scanner, chunk);
     parser.emit_return(chunk);
@@ -209,3 +260,27 @@ pub fn compile(source: &str, chunk: &mut Chunk, parser: &mut Parser, scanner: &m
     !parser.had_error
 }
 
+
+fn parse_rule(owner: scanner::TokenKind) -> (&'static str, &'static str, u8) {
+    match owner {
+        scanner::TokenKind::TokenLeftParen => {
+            return ("grouping", "none", PREC_NONE)
+        }
+        scanner::TokenKind::TokenPlus => {
+            return ("none", "binary", PREC_TERM)
+        }
+        scanner::TokenKind::TokenMinus => {
+            return ("unary", "binary", PREC_TERM)
+        }
+        scanner::TokenKind::TokenSlash => {
+            return ("none", "binary", PREC_FACTOR)
+        }
+        scanner::TokenKind::TokenStar => {
+            return ("none", "binary", PREC_FACTOR)
+        }
+        scanner::TokenKind::TokenNumber => {
+            return ("number", "none", PREC_NONE)
+        }
+        _ => return ("none", "none", PREC_NONE)
+    }
+}

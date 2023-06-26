@@ -66,12 +66,12 @@ pub fn interpret(source: &str) -> InterpretResult {
         return InterpretResult::InterpretCompileError;
     }
 
-    // vm.chunk = chunk;
-    // vm.inst_pointer = 0;
-    // let result: InterpretResult = run(&mut vm);
+    vm.chunk = chunk;
+    vm.inst_pointer = 0;
+    let result: InterpretResult = run(&mut vm);
 
-    // result
-    InterpretResult::InterpretOK
+    result
+    // InterpretResult::InterpretOK
 }
 
 fn binary_solver(vm: &mut VM, operator: char) {
@@ -79,16 +79,16 @@ fn binary_solver(vm: &mut VM, operator: char) {
     let b = vm.pop();
     match operator {
         '+' => vm.push(a + b),
-        '-' => vm.push(a - b),
+        '-' => vm.push(b - a),
         '*' => vm.push(a * b),
         '/' => {
-            if b == 0f64 {
+            if a == 0f64 {
                 println!("Error! cannot divide by 0");
                 vm.push(b);
                 vm.push(a);
             }
             else {
-                vm.push(a / b);
+                vm.push(b / a);
             }
         },
         _ => {
