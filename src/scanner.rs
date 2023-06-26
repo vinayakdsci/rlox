@@ -200,7 +200,6 @@ impl Scanner {
                                         'a' => return self.check_keyword(2, 3, "lse", TokenKind::TokenFalse, source),
                                         _  => {
                                             println!("No match for f");
-                                            let id = source.get(self.start..self.current).unwrap().to_string();
                                             return TokenKind::TokenIdentifier;
                                         }
                                     };
@@ -210,7 +209,6 @@ impl Scanner {
                                 }
                             }
                         } else { 
-                            let id = source.get(self.start..self.current).unwrap().to_string();
                             return TokenKind::TokenIdentifier;
                         }
                     }
@@ -251,7 +249,6 @@ impl Scanner {
         {
             return token_kind;
         }
-        let id = source.get(self.start..self.current).unwrap().to_string();
         TokenKind::TokenIdentifier
     }
 
@@ -345,6 +342,7 @@ impl Scanner {
             '.' => return self.make_token(TokenKind::TokenPeriod),
             '-' => return self.make_token(TokenKind::TokenMinus),
             '+' => return self.make_token(TokenKind::TokenPlus),
+            '/' => return self.make_token(TokenKind::TokenSlash),
             '*' => return self.make_token(TokenKind::TokenStar),
             '!' => if self.match_with(source, '=', length) { return self.make_token(TokenKind::TokenBangEqual) }    else {return self.make_token(TokenKind::TokenBang)},
             '=' => if self.match_with(source, '=', length) { return self.make_token(TokenKind::TokenEqualEqual) }   else {return self.make_token(TokenKind::TokenEqual)},

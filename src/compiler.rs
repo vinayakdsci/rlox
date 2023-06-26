@@ -1,7 +1,8 @@
 use std::str::FromStr;
-use std::borrow::Borrow;
+
 #[path = "scanner.rs"]
 pub mod scanner;
+
 use crate::chunk::Chunk;
 use crate::chunk::OpCode;
 use crate::debug::*;
@@ -79,9 +80,6 @@ impl Parser {
                         self.advance(source, scanner, chunk);
                         return;
                     }
-                    _ => {
-                        self.error_at_current(msg);
-                    }
                 }
             }
             None => {
@@ -89,7 +87,7 @@ impl Parser {
             } 
         }
     }
-    // otherwise, throw error
+
 
     fn error_at_current(&mut self, message: &str) {
         self.error_at("current" ,message);
@@ -155,7 +153,7 @@ impl Parser {
                 match cons {
                     Ok(y) =>{
                         let mut byte = chunk.add_constant(y);
-                        println!("{:?}", byte);
+                        // println!("{:?}", byte);
                         self.emit_byte(chunk, byte);
                     }
                     Err(..) => {
@@ -218,7 +216,7 @@ impl Parser {
     fn unary(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
         let token_kind = self.previous_token.to_owned().unwrap().kind;
         self.parse_precedence(PREC_UNARY, source, scanner, chunk);
-        
+
         if token_kind == scanner::TokenKind::TokenMinus {
             self.emit_byte(chunk, OpCode::OpNegate);
         } else {
@@ -249,14 +247,17 @@ impl Parser {
 
 
 pub fn compile(source: &str, chunk: &mut Chunk, parser: &mut Parser, scanner: &mut scanner::Scanner) -> bool {
-    // the compiler is single pass, so init the parser here?
+
     parser.advance(source, scanner, chunk);
     parser.expression(source, scanner, chunk);
-    println!("{:?}", parser);
+
+    // println!("{:?}", parser);
+
     parser.consume(source, scanner::TokenKind::TokenEof, "Expected end of expression in compile", scanner, chunk);
     parser.emit_return(chunk);
-    disassemble_chunk(chunk, "Code");
-
+    if std::env::args().any(|x| x == "debug_build") {
+        disassemble_chunk(chunk, "Code");
+    }
     !parser.had_error
 }
 

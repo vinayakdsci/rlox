@@ -1,8 +1,7 @@
 // The Virtual Machine!
 
-use crate::chunk::value::Value;
 use crate::chunk;
-use crate::scanner;
+use crate::chunk::value::Value;
 use crate::compiler;
 
 const STACK_MAX: usize = 256;
@@ -18,7 +17,7 @@ pub enum InterpretResult {
 
 pub struct VM {
     pub chunk: chunk::Chunk,
-    pub inst_pointer: usize, // Rust might not allow pointers to the middle of the array, sp use an index insead
+    pub inst_pointer: usize, // Rust might not allow pointers to the middle of the array, so use an index insead
     pub stack: Vec<Value>,
 }
 
@@ -32,11 +31,7 @@ impl VM {
         }
     }
 
-    // fn reset_stack(&mut self) {
-    //     // self.stack_top = self.stack.len();
-    // }
-    pub fn pop(&mut self) -> Value {
-        // assert_eq!(self.stack.capacity(), self.stack.len());
+    fn pop(&mut self) -> Value {
         match self.stack.last() {
             Some(x) => {
                 return self.stack.pop().unwrap();
@@ -48,7 +43,7 @@ impl VM {
         }
     }
 
-    pub fn push(&mut self, value: Value) {
+    fn push(&mut self, value: Value) {
         self.stack.push(value);
     }
 }
@@ -71,7 +66,7 @@ pub fn interpret(source: &str) -> InterpretResult {
     let result: InterpretResult = run(&mut vm);
 
     result
-    // InterpretResult::InterpretOK
+        // InterpretResult::InterpretOK
 }
 
 fn binary_solver(vm: &mut VM, operator: char) {
