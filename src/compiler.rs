@@ -1,7 +1,10 @@
+use std::str::FromStr;
 use std::borrow::Borrow;
 #[path = "scanner.rs"]
 pub mod scanner;
 use crate::chunk::Chunk;
+use crate::chunk::OpCode;
+use crate::debug::*;
 
 //Define the Parser
 #[derive(Debug)]
@@ -26,7 +29,7 @@ impl Parser {
         }
     }
 
-    fn advance(&mut self, source: &str, scanner: &mut scanner::Scanner) {
+    fn advance(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
         self.previous_token = match &self.current_token {
             Some(x) => {
                 Some(x.to_owned())
@@ -54,12 +57,12 @@ impl Parser {
         }
     }
 
-    fn consume(&mut self, source: &str, token_kind: scanner::TokenKind, msg: &str, scanner: &mut scanner::Scanner) {
+    fn consume(&mut self, source: &str, token_kind: scanner::TokenKind, msg: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
         match &self.current_token {
             Some(x) => {
                 match &x.kind {
                     token_kind => {
-                        self.advance(source, scanner);
+                        self.advance(source, scanner, chunk);
                         return;
                     }
                     _ => {
@@ -129,16 +132,45 @@ impl Parser {
         eprintln!("{}", format!(" :{}", message));
         self.had_error = true;
     }
-}
-pub fn compile(source: &str, chunk: &Chunk, parser: &mut Parser, scanner: &mut scanner::Scanner) -> bool {
-    // the compiler is single pass, so init the parser here?
-    parser.advance(source, scanner);
-    // compile_expression();
-    println!("{:?}", parser);
-    parser.consume(source, scanner::TokenKind::TokenEof, "Expected end of expression in compile", scanner);
 
+    fn number(&self, source: &str, chunk: &mut Chunk) {
+        match self.previous_token.to_owned() {
+            Some(x) => {
+                let value = source.get(x.start..x.start + x.length - 1).unwrap();
+                let cons = f64::from_str(value);
+                match cons {
+                    Ok(y) =>{
+                        let mut byte = chunk.add_constant(y);
+                        self.emit_byte(chunk, byte);
+                    }
+                    Err(..) => {
+                        eprintln!("float conversion error");
+                    }
+                }
+            }
+            None => {
+                eprintln!("Exception in number()");
+            }
+        }
+    }
+
+    fn emit_byte(&self, chunk: &mut Chunk, byte: OpCode) {
+        chunk.write_chunk(byte, self.previous_token.as_ref().unwrap().line);
+    }
+
+    fn emit_return(&self, chunk: &mut Chunk) {
+        self.emit_byte(chunk, OpCode::OpReturn);
+    }
+
+}
+pub fn compile(source: &str, chunk: &mut Chunk, parser: &mut Parser, scanner: &mut scanner::Scanner) -> bool {
+    // the compiler is single pass, so init the parser here?
+    parser.advance(source, scanner, chunk);
+    // parser.expression();
+    println!("{:?}", parser);
+    parser.consume(source, scanner::TokenKind::TokenEof, "Expected end of expression in compile", scanner, chunk);
+    parser.emit_return(chunk);
+    disassemble_chunk(chunk, "Code");
     !parser.had_error
 }
-
-
 
