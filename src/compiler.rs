@@ -6,6 +6,20 @@ use crate::chunk::Chunk;
 use crate::chunk::OpCode;
 use crate::debug::*;
 
+const  PREC_NONE: u8       = 1;  
+const  PREC_ASSIGNMENT: u8 = 2;  // =
+const  PREC_OR: u8         = 3;  // or
+const  PREC_AND: u8        = 4; // and
+const  PREC_EQUALITY: u8   = 5; // == !=
+const  PREC_COMPARISON: u8 = 6;  // < > <= >=
+const  PREC_TERM: u8       = 7;  // + -
+const  PREC_FACTOR: u8     = 8;  // * /
+const  PREC_UNARY: u8      = 9;  // ! -
+const  PREC_CALL: u8       = 10; // . ()
+const  PREC_PRIMARY: u8    = 11;
+
+
+
 //Define the Parser
 #[derive(Debug)]
 pub struct Parser {
@@ -162,6 +176,26 @@ impl Parser {
         self.emit_byte(chunk, OpCode::OpReturn);
     }
 
+    fn expression() {
+
+    }
+
+    fn unary(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
+        let token_kind = &self.previous_token.as_ref().unwrap().kind;
+        // self.expression();
+        
+        if *token_kind == scanner::TokenKind::TokenMinus {
+            self.emit_byte(chunk, OpCode::OpNegate);
+        } else {
+            return;
+        }
+    }
+
+    fn group(&mut self, source: &str, scanner: &mut scanner::Scanner, chunk: &mut Chunk) {
+        // self.expression();
+        self.consume(source, scanner::TokenKind::TokenRightParen, "exprected ')' after expression", scanner, chunk);
+    }
+
 }
 pub fn compile(source: &str, chunk: &mut Chunk, parser: &mut Parser, scanner: &mut scanner::Scanner) -> bool {
     // the compiler is single pass, so init the parser here?
@@ -171,6 +205,7 @@ pub fn compile(source: &str, chunk: &mut Chunk, parser: &mut Parser, scanner: &m
     parser.consume(source, scanner::TokenKind::TokenEof, "Expected end of expression in compile", scanner, chunk);
     parser.emit_return(chunk);
     disassemble_chunk(chunk, "Code");
+
     !parser.had_error
 }
 
