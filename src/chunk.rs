@@ -1,7 +1,6 @@
 #[path = "value.rs"]
 pub mod value;
 
-
 #[derive(Default, Debug, Clone, Copy)]
 pub enum OpCode {
     OpConstant(value::Value),
@@ -14,7 +13,6 @@ pub enum OpCode {
     OpReturn,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct Chunk {
     pub code: Vec<OpCode>,
@@ -23,11 +21,8 @@ pub struct Chunk {
     pub lines: Vec<i32>,
 }
 
-
 impl Chunk {
-
     pub fn init_chunk() -> Self {
-
         let code_store: Vec<OpCode> = Vec::with_capacity(8);
         Self {
             code: code_store,
@@ -62,4 +57,3 @@ impl Chunk {
         self.count += 1;
     }
 }
-

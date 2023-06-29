@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum TokenKind {
     TokenLeftParen,
@@ -48,7 +47,7 @@ pub enum TokenKind {
 }
 
 #[derive(Debug, Clone)]
-pub struct Token{
+pub struct Token {
     pub kind: TokenKind,
     pub length: usize,
     pub start: usize,
@@ -61,7 +60,6 @@ pub struct Scanner {
     pub current: usize,
     pub line: i32,
 }
-
 
 impl Scanner {
     pub fn init_scanner() -> Self {
@@ -100,11 +98,11 @@ impl Scanner {
             match x {
                 ' ' | '\r' | '\t' => {
                     self.current += 1;
-                },
+                }
                 '\n' => {
                     self.line += 1;
                     self.current += 1;
-                },
+                }
                 '#' => {
                     while self.current < source.len() && self.peek(source).unwrap() != '\n' {
                         self.current += 1;
@@ -112,37 +110,36 @@ impl Scanner {
                 }
                 _ => return,
             }
-        } 
+        }
     }
 
     fn peek(&mut self, source: &str) -> Option<char> {
         if source.get(self.current..=self.current).is_none() {
             None
-        }
-        else {
+        } else {
             Some(
                 source
-                .get(self.current..=self.current)
-                .unwrap()
-                .chars().nth(0)
-                .unwrap(),
+                    .get(self.current..=self.current)
+                    .unwrap()
+                    .chars()
+                    .nth(0)
+                    .unwrap(),
             )
         }
     }
 
     fn peek_next(&mut self, source: &str) -> Option<char> {
-
         if source.get(self.current + 1..=self.current + 1).is_none() {
             println!("cursor at {}", self.current);
             None
-        }
-        else {
+        } else {
             Some(
                 source
-                .get(self.current + 1..=self.current+1)
-                .unwrap()
-                .chars().nth(0)
-                .unwrap(),
+                    .get(self.current + 1..=self.current + 1)
+                    .unwrap()
+                    .chars()
+                    .nth(0)
+                    .unwrap(),
             )
         }
     }
@@ -156,8 +153,14 @@ impl Scanner {
         }
     }
 
-    pub  fn error_token(&mut self, message: &str) -> Token {
-        eprintln!("{}", format!("Error encountered at {}, col{} to {}", self.line, self.start, self.current));
+    pub fn error_token(&mut self, message: &str) -> Token {
+        eprintln!(
+            "{}",
+            format!(
+                "Error encountered at {}, col{} to {}",
+                self.line, self.start, self.current
+            )
+        );
         Token {
             kind: TokenKind::TokenError,
             start: 0,
@@ -166,14 +169,14 @@ impl Scanner {
         }
     }
 
-    fn char_at_start(&self, source: & str) -> Option<char> {
+    fn char_at_start(&self, source: &str) -> Option<char> {
         match source.get(self.start + 1..=self.start + 1) {
             Some(x) => return x.chars().nth(0),
             None => return None,
         }
     }
 
-    fn identifier_type(&mut self, source: & str) -> TokenKind {
+    fn identifier_type(&mut self, source: &str) -> TokenKind {
         //build the trie
         match source.get(self.start..=self.start) {
             Some(x) => {
@@ -186,7 +189,9 @@ impl Scanner {
                     'n' => return self.check_keyword(1, 2, "il", TokenKind::TokenNil, source),
                     'o' => return self.check_keyword(1, 1, "r", TokenKind::TokenOr, source),
                     'p' => return self.check_keyword(1, 4, "rint", TokenKind::TokenPrint, source),
-                    'r' => return self.check_keyword(1, 5, "eturn", TokenKind::TokenReturn, source),
+                    'r' => {
+                        return self.check_keyword(1, 5, "eturn", TokenKind::TokenReturn, source)
+                    }
                     's' => return self.check_keyword(1, 4, "uper", TokenKind::TokenSuper, source),
                     'w' => return self.check_keyword(1, 4, "hile", TokenKind::TokenWhile, source),
                     // trie now branches
@@ -195,33 +200,73 @@ impl Scanner {
                             match self.char_at_start(source) {
                                 Some(x) => {
                                     match x {
-                                        'o' => return self.check_keyword(2, 1, "r", TokenKind::TokenFor, source),
-                                        'u' => return self.check_keyword(2, 1, "n", TokenKind::TokenFun, source),
-                                        'a' => return self.check_keyword(2, 3, "lse", TokenKind::TokenFalse, source),
-                                        _  => {
+                                        'o' => {
+                                            return self.check_keyword(
+                                                2,
+                                                1,
+                                                "r",
+                                                TokenKind::TokenFor,
+                                                source,
+                                            )
+                                        }
+                                        'u' => {
+                                            return self.check_keyword(
+                                                2,
+                                                1,
+                                                "n",
+                                                TokenKind::TokenFun,
+                                                source,
+                                            )
+                                        }
+                                        'a' => {
+                                            return self.check_keyword(
+                                                2,
+                                                3,
+                                                "lse",
+                                                TokenKind::TokenFalse,
+                                                source,
+                                            )
+                                        }
+                                        _ => {
                                             println!("No match for f");
                                             return TokenKind::TokenIdentifier;
                                         }
                                     };
-                                },
+                                }
                                 None => {
                                     return TokenKind::TokenError;
                                 }
                             }
-                        } else { 
+                        } else {
                             return TokenKind::TokenIdentifier;
                         }
                     }
-                    't' =>  {
+                    't' => {
                         if self.current - self.start > 1 {
                             match self.char_at_start(source) {
                                 Some(x) => {
                                     match x {
-                                        'h' => return self.check_keyword(2, 2, "is", TokenKind::TokenThis, source),
-                                        'r' => return self.check_keyword(2, 2, "ue", TokenKind::TokenTrue, source),
-                                        _  => return TokenKind::TokenIdentifier,
+                                        'h' => {
+                                            return self.check_keyword(
+                                                2,
+                                                2,
+                                                "is",
+                                                TokenKind::TokenThis,
+                                                source,
+                                            )
+                                        }
+                                        'r' => {
+                                            return self.check_keyword(
+                                                2,
+                                                2,
+                                                "ue",
+                                                TokenKind::TokenTrue,
+                                                source,
+                                            )
+                                        }
+                                        _ => return TokenKind::TokenIdentifier,
                                     };
-                                },
+                                }
                                 None => {
                                     return TokenKind::TokenError;
                                 }
@@ -235,7 +280,7 @@ impl Scanner {
                         return TokenKind::TokenIdentifier;
                     }
                 }
-            },
+            }
             None => {
                 return TokenKind::TokenError;
             }
@@ -243,23 +288,33 @@ impl Scanner {
         // TokenKind::TokenIdentifier
     }
 
-    fn check_keyword(&self, start: usize, length: usize, rest: & str, token_kind: TokenKind, source: & str) -> TokenKind {
+    fn check_keyword(
+        &self,
+        start: usize,
+        length: usize,
+        rest: &str,
+        token_kind: TokenKind,
+        source: &str,
+    ) -> TokenKind {
         if self.current - self.start == start + length
-            && source.get(self.start + start..self.start + start + length).unwrap() == rest 
+            && source
+                .get(self.start + start..self.start + start + length)
+                .unwrap()
+                == rest
         {
             return token_kind;
         }
         TokenKind::TokenIdentifier
     }
 
-    fn number(&mut self, source: & str) -> Token {
+    fn number(&mut self, source: &str) -> Token {
         while self.peek(source).is_some() && self.peek(source).unwrap().is_ascii_digit() {
             self.current += 1;
         }
 
-        if self.peek(source).is_some() 
-            && self.peek(source).unwrap() == '.' 
-                && self.peek_next(source).unwrap().is_ascii_digit() 
+        if self.peek(source).is_some()
+            && self.peek(source).unwrap() == '.'
+            && self.peek_next(source).unwrap().is_ascii_digit()
         {
             self.current += 1;
             while self.peek(source).is_some() && self.peek(source).unwrap().is_ascii_digit() {
@@ -269,7 +324,7 @@ impl Scanner {
 
         //check if there is no space making an invalid identifier
         if self.peek(source).is_some()
-            && (self.peek(source).unwrap().is_ascii_alphabetic() 
+            && (self.peek(source).unwrap().is_ascii_alphabetic()
                 || self.peek(source).unwrap() == '_')
         {
             return self.error_token("Error: cannot start an identifier with a number!");
@@ -277,25 +332,25 @@ impl Scanner {
         return self.make_token(TokenKind::TokenNumber);
     }
 
-    fn identifier(&mut self, source: & str) -> Token {
-        while self.peek(source).is_some() 
-            && (self.peek(source).unwrap().is_ascii_alphanumeric() 
-                || self.peek(source).unwrap() == '_') 
-            {
-                self.current += 1;
-            }
+    fn identifier(&mut self, source: &str) -> Token {
+        while self.peek(source).is_some()
+            && (self.peek(source).unwrap().is_ascii_alphanumeric()
+                || self.peek(source).unwrap() == '_')
+        {
+            self.current += 1;
+        }
         // borrow rules
         let token_for_id = self.identifier_type(source);
         self.make_token(token_for_id)
     }
 
-    fn string(&mut self, source: & str) -> Token {
+    fn string(&mut self, source: &str) -> Token {
         //consume chars till another '"' is encountered, take care of newlines
         let poss_line = self.line;
         let poss_col = self.current;
         while self.peek(source).is_some() && self.peek(source).unwrap() != '"' {
-            if self.peek(source).unwrap() == '\n' { 
-                self.line += 1; 
+            if self.peek(source).unwrap() == '\n' {
+                self.line += 1;
             }
             self.current += 1;
         }
@@ -310,7 +365,6 @@ impl Scanner {
         self.make_token(TokenKind::TokenString)
     }
     pub fn scan_token(&mut self, source: &str) -> Token {
-
         let length = source.len();
         self.skip_whitespaces(source);
         self.start = self.current;
@@ -325,10 +379,10 @@ impl Scanner {
 
         // match for identifiers
         if c.is_ascii_alphabetic() || c == '_' {
-            return self.identifier(source) 
+            return self.identifier(source);
         }
         if c.is_ascii_digit() {
-            return self.number(source) 
+            return self.number(source);
         }
 
         // println!("Matched char {}", c);
@@ -344,18 +398,36 @@ impl Scanner {
             '+' => return self.make_token(TokenKind::TokenPlus),
             '/' => return self.make_token(TokenKind::TokenSlash),
             '*' => return self.make_token(TokenKind::TokenStar),
-            '!' => if self.match_with(source, '=', length) { return self.make_token(TokenKind::TokenBangEqual) }    else {return self.make_token(TokenKind::TokenBang)},
-            '=' => if self.match_with(source, '=', length) { return self.make_token(TokenKind::TokenEqualEqual) }   else {return self.make_token(TokenKind::TokenEqual)},
-            '<' => if self.match_with(source, '=', length) { return self.make_token(TokenKind::TokenLessEqual) }    else {return self.make_token(TokenKind::TokenLess)},
-            '>' => if self.match_with(source, '=', length) { return self.make_token(TokenKind::TokenGreaterEqual) } else {return self.make_token(TokenKind::TokenGreater)},
+            '!' => {
+                if self.match_with(source, '=', length) {
+                    return self.make_token(TokenKind::TokenBangEqual);
+                } else {
+                    return self.make_token(TokenKind::TokenBang);
+                }
+            }
+            '=' => {
+                if self.match_with(source, '=', length) {
+                    return self.make_token(TokenKind::TokenEqualEqual);
+                } else {
+                    return self.make_token(TokenKind::TokenEqual);
+                }
+            }
+            '<' => {
+                if self.match_with(source, '=', length) {
+                    return self.make_token(TokenKind::TokenLessEqual);
+                } else {
+                    return self.make_token(TokenKind::TokenLess);
+                }
+            }
+            '>' => {
+                if self.match_with(source, '=', length) {
+                    return self.make_token(TokenKind::TokenGreaterEqual);
+                } else {
+                    return self.make_token(TokenKind::TokenGreater);
+                }
+            }
             '"' => self.string(source),
-            _  => self.error_token("Unexpected character encountered."),
+            _ => self.error_token("Unexpected character encountered."),
         }
-
-
     }
-
-
 }
-
-

@@ -1,5 +1,4 @@
 // The Virtual Machine!
-
 use crate::chunk;
 use crate::chunk::value::Value;
 use crate::compiler;
@@ -14,7 +13,6 @@ pub enum InterpretResult {
     InterpretRuntimeError,
 }
 
-
 pub struct VM {
     pub chunk: chunk::Chunk,
     pub inst_pointer: usize, // Rust might not allow pointers to the middle of the array, so use an index insead
@@ -22,7 +20,6 @@ pub struct VM {
 }
 
 impl VM {
-
     pub fn init_vm(chunk: &chunk::Chunk) -> Self {
         Self {
             chunk: chunk.to_owned(),
@@ -37,8 +34,8 @@ impl VM {
                 return self.stack.pop().unwrap();
             }
             None => {
-               eprintln!("No values in the stack, expression required");
-               64f64
+                eprintln!("No values in the stack, expression required");
+                64f64
             }
         }
     }
@@ -47,7 +44,6 @@ impl VM {
         self.stack.push(value);
     }
 }
-
 
 pub fn interpret(source: &str) -> InterpretResult {
     //pass the chunk to the compiler (remember borrow),
@@ -66,7 +62,7 @@ pub fn interpret(source: &str) -> InterpretResult {
     let result: InterpretResult = run(&mut vm);
 
     result
-        // InterpretResult::InterpretOK
+    // InterpretResult::InterpretOK
 }
 
 fn binary_solver(vm: &mut VM, operator: char) {
@@ -81,11 +77,10 @@ fn binary_solver(vm: &mut VM, operator: char) {
                 println!("Error! cannot divide by 0");
                 vm.push(b);
                 vm.push(a);
-            }
-            else {
+            } else {
                 vm.push(b / a);
             }
-        },
+        }
         _ => {
             println!("This operator is not recognized");
         }
@@ -99,12 +94,12 @@ fn run(vm: &mut VM) -> InterpretResult {
         match op_code {
             chunk::OpCode::OpReturn => {
                 println!("{}", vm.pop());
-                return InterpretResult::InterpretOK
-            },
+                return InterpretResult::InterpretOK;
+            }
             chunk::OpCode::OpNegate => {
                 let neg = vm.pop();
                 vm.push(-neg);
-            },
+            }
             chunk::OpCode::OpAdd => binary_solver(vm, '+'),
             chunk::OpCode::OpSubtract => binary_solver(vm, '-'),
             chunk::OpCode::OpMultiply => binary_solver(vm, '*'),

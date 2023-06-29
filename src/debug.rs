@@ -17,7 +17,7 @@ pub fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
     print!("---{}    ", offset);
     if offset > 0 && chunk.lines[offset] == chunk.lines[offset - 1] {
         //check if the last and the current line are same
-        print!{"    |   "};
+        print! {"    |   "};
     } else {
         //new inst line
         print!("    {}   ", chunk.lines[offset]);
@@ -39,7 +39,6 @@ fn constant_instruction(name: &str, value: value::Value, offset: usize) -> usize
     println!();
     offset + 1
 }
-
 
 pub fn debug_stack_trace(vm: &vm::VM) {
     if std::env::args().any(|x| &x == "debug_build") {

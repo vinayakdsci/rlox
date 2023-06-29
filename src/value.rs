@@ -1,15 +1,13 @@
 // Representing values in the VM requires a struct to hold them
 //
 
-
 pub type Value = f64;
 
 #[derive(Debug, Clone)]
 pub struct ValueArray {
     pub count: usize,
-    pub values: Vec<Value>,  // all the numerical values are float under the hood
+    pub values: Vec<Value>, // all the numerical values are float under the hood
 }
-
 
 impl ValueArray {
     pub fn init_value_array() -> Self {
@@ -25,6 +23,3 @@ impl ValueArray {
         self.count += 1;
     }
 }
-
-
-

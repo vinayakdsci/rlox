@@ -18,7 +18,7 @@ mod vm;
 
 fn main() {
     let mut args = std::env::args();
-    
+
     if args.len() == 1 {
         repl();
     } else if args.len() == 2 {
@@ -27,7 +27,6 @@ fn main() {
         println!("Usage: cargo run [file_path]");
     }
 }
-
 
 fn repl() {
     // the compiler is single pass, so init the parser here?
